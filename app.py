@@ -1,15 +1,21 @@
 import os
 import csv
-from flask import Flask, render_template, jsonify
+from flask import Flask, jsonify, send_from_directory
 
-# index.htmlをルートから読み込む設定
-app = Flask(__name__, template_folder='.', static_folder='.')
+# index.htmlをそのまま配信するための設定
+app = Flask(__name__, static_folder='.', static_url_path='')
 
 def get_quiz_data():
     """CSVを読み込んで解析する"""
     csv_path = 'quiz_data.csv'
+    # ファイルがない場合の処理
     if not os.path.exists(csv_path):
-        return {"single": [], "multi": []}
+        # 念のためカレントディレクトリのファイル一覧から探す
+        csv_files = [f for f in os.listdir('.') if f.endswith('.csv')]
+        if csv_files:
+            csv_path = csv_files[0]
+        else:
+            return {"single": [], "multi": []}
 
     single_questions = []
     multi_questions = []
@@ -53,8 +59,8 @@ def get_quiz_data():
 
 @app.route('/')
 def home():
-    # index.htmlを返す
-    return render_template('index.html')
+    # render_templateを使わず、ファイルをそのまま送る（誤作動防止）
+    return send_from_directory('.', 'index.html')
 
 @app.route('/api/quiz_data')
 def api_quiz_data():
