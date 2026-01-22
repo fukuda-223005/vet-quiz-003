@@ -113,9 +113,9 @@
     }
     
     .horse-img-placeholder {
-      font-size: 3em;
+      width: 60px;
+      height: 60px;
       margin-bottom: 5px;
-      line-height: 1;
     }
     .horse-name {
       font-weight: bold;
@@ -213,36 +213,38 @@
       font-size: 1.2em;
     }
 
-    /* 馬の表現 */
+    /* 馬の表現 (SVG用) */
     .horse-sprite {
       position: absolute;
-      font-size: 32px;
-      transform: scaleX(-1); /* 右向き */
-      filter: drop-shadow(2px 4px 3px rgba(0,0,0,0.3));
+      width: 60px;
+      height: 40px;
       transition: left 0.5s cubic-bezier(0.25, 0.1, 0.25, 1.0), top 0.5s ease;
+      /* SVG内部で反転させるのでCSS transformは削除 */
     }
     
     .anim-run {
       animation: galloping 0.4s infinite alternate;
     }
     @keyframes galloping {
-      0% { transform: scaleX(-1) translateY(0); }
-      100% { transform: scaleX(-1) translateY(-3px); }
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-3px); }
     }
 
     /* プレイヤー馬: 手前に表示 */
     #player-horse {
-      bottom: 15px;
+      bottom: 20px;
       left: 50%; /* 初期位置：中央 */
       z-index: 10;
-      font-size: 45px; /* 少し大きく */
-      filter: drop-shadow(0px 0px 10px rgba(255, 255, 0, 0.5)); /* プレイヤー強調 */
+      width: 80px; /* プレイヤーは少し大きく */
+      height: 54px;
+      filter: drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.8)); /* プレイヤー強調 */
     }
 
     /* ライバル馬 */
     .horse-rival {
-      font-size: 28px;
-      opacity: 0.9;
+      width: 50px;
+      height: 34px;
+      opacity: 0.95;
       z-index: 5;
     }
 
@@ -347,7 +349,7 @@
       <h2 id="current-class-display">新馬戦</h2>
       
       <div id="current-status-display" style="display:flex; justify-content:center; align-items:center; gap:10px; margin-bottom:10px;">
-        <span id="current-horse-icon" style="font-size:2em;">🐴</span>
+        <div id="current-horse-icon" style="width:50px; height:34px;"></div>
         <span id="current-category-display" style="font-weight:bold; color:#555;">範囲: A問題</span>
       </div>
 
@@ -367,19 +369,19 @@
           <label>出走馬を選択</label>
           <div class="horse-select-grid">
             <div id="sel-brown" class="horse-card selected" onclick="selectHorse('brown')">
-              <div class="horse-img-placeholder">🐴</div>
+              <div class="horse-img-placeholder" id="img-brown"></div>
               <div class="horse-name">鹿毛 (茶)</div>
             </div>
             <div id="sel-black" class="horse-card" onclick="selectHorse('black')">
-              <div class="horse-img-placeholder">🐎</div>
+              <div class="horse-img-placeholder" id="img-black"></div>
               <div class="horse-name">黒鹿毛 (黒)</div>
             </div>
             <div id="sel-gray" class="horse-card" onclick="selectHorse('gray')">
-              <div class="horse-img-placeholder">🦄</div>
+              <div class="horse-img-placeholder" id="img-gray"></div>
               <div class="horse-name">芦毛 (白)</div>
             </div>
             <div id="sel-zebra" class="horse-card" onclick="selectHorse('zebra')">
-              <div class="horse-img-placeholder">🦓</div>
+              <div class="horse-img-placeholder" id="img-zebra"></div>
               <div class="horse-name">シマウマ</div>
             </div>
           </div>
@@ -410,7 +412,7 @@
         <!-- ライバル馬のコンテナ -->
         <div id="rivals-container"></div>
         <!-- プレイヤー馬 -->
-        <div id="player-horse" class="horse-sprite">🐴</div>
+        <div id="player-horse" class="horse-sprite"></div>
       </div>
     </header>
 
@@ -482,15 +484,56 @@
   let totalElapsed = 0; // ms
   
   // 位置演出用変数
-  // 50を中心に、正解でプラス、不正解でマイナス
   let playerPosition = 50; 
   const CENTER_POS = 50;
   const STEP_POS = 8; // 正解ごとの移動量
   const MIN_POS = 10;
   const MAX_POS = 90;
 
+  // === SVG生成関数 ===
+  // シンプルな馬のシルエットSVGを生成します
+  function getHorseSvg(color) {
+    let bodyColor = '#8B4513'; // brown
+    let strokeColor = 'none';
+    let zebraStripes = '';
+    
+    if (color === 'black') bodyColor = '#2c3e50';
+    if (color === 'gray') bodyColor = '#ecf0f1'; // 明るいグレー
+    if (color === 'zebra') { 
+      bodyColor = '#ffffff'; 
+      strokeColor = '#000';
+      // シマウマ用の縞模様パス
+      zebraStripes = `<path d="M25,25 L35,15 M40,25 L50,15 M30,40 L40,30 M50,40 L60,30" stroke="black" stroke-width="2" />`;
+    }
+
+    // 馬の形状パス (右向き)
+    const horsePath = `
+      <g transform="scale(-1,1) translate(-100,0)"> <!-- 右向きに反転 -->
+        <!-- 脚 -->
+        <path d="M30,60 L30,90 L40,90 L40,60 Z" fill="${bodyColor}" stroke="#333" stroke-width="1"/>
+        <path d="M70,60 L70,90 L80,90 L80,60 Z" fill="${bodyColor}" stroke="#333" stroke-width="1"/>
+        <!-- 体・頭 -->
+        <path d="M20,40 Q25,10 60,30 Q90,10 90,40 L90,60 L80,60 L80,50 L20,50 L20,60 L10,60 Z" fill="${bodyColor}" stroke="#333" stroke-width="1"/>
+        <!-- たてがみ/尻尾 -->
+        <path d="M10,40 Q0,50 5,70" stroke="#333" stroke-width="3" fill="none"/>
+        ${zebraStripes}
+        <!-- 目 -->
+        <circle cx="75" cy="35" r="2" fill="white"/>
+        <circle cx="75" cy="35" r="1" fill="black"/>
+      </g>
+    `;
+
+    return `<svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">${horsePath}</svg>`;
+  }
+
   // === 初期化 ===
   window.onload = function() {
+    // 選択画面のプレビュー画像を生成
+    ['brown', 'black', 'gray', 'zebra'].forEach(c => {
+      const el = document.getElementById(`img-${c}`);
+      if(el) el.innerHTML = getHorseSvg(c);
+    });
+
     loadSavedData();
     loadDataFromPython();
   };
@@ -510,6 +553,9 @@
     if (col) {
       playerHorseColor = col;
       updateHorseSelectUI(col);
+    } else {
+      // デフォルト選択UI反映
+      updateHorseSelectUI('brown');
     }
   }
 
@@ -590,8 +636,9 @@
       wrapper.style.display = 'none';
       statusDisplay.style.display = 'flex';
       
-      const iconMap = { 'brown': '🐴', 'black': '🐎', 'gray': '🦄', 'zebra': '🦓' };
-      document.getElementById('current-horse-icon').textContent = iconMap[playerHorseColor] || '🐴';
+      // スタート画面の現在の馬アイコン更新
+      const iconDiv = document.getElementById('current-horse-icon');
+      iconDiv.innerHTML = getHorseSvg(playerHorseColor);
       
       const catText = selectedCategory === 'ALL' ? '全範囲' : `学説${selectedCategory}`;
       document.getElementById('current-category-display').textContent = catText;
@@ -644,10 +691,9 @@
     if (currentClassId >= 9) badge.classList.add('badge-gold');
     else badge.classList.remove('badge-gold');
 
-    // プレイヤー初期化
+    // プレイヤー馬初期化 (SVG)
     const pHorse = document.getElementById('player-horse');
-    const iconMap = { 'brown': '🐴', 'black': '🐎', 'gray': '🦄', 'zebra': '🦓' };
-    pHorse.textContent = iconMap[playerHorseColor] || '🐴';
+    pHorse.innerHTML = getHorseSvg(playerHorseColor);
     pHorse.className = `horse-sprite anim-run`; 
     
     // 位置初期化（中団）
@@ -666,20 +712,24 @@
     container.innerHTML = '';
     
     // 画面の幅 10% 〜 90% の間に9頭を配置
-    // 集団感を出すため、ランダムだが重なりすぎないように
+    const colors = ['brown', 'black', 'gray', 'brown', 'black', 'brown']; // ライバルの色候補
+
     for(let i=0; i<9; i++) {
       const rival = document.createElement('div');
-      rival.textContent = '🐎';
+      // ランダムな色のSVGを生成
+      const rndColor = colors[Math.floor(Math.random() * colors.length)];
+      rival.innerHTML = getHorseSvg(rndColor);
+      
       rival.className = 'horse-sprite anim-run horse-rival';
-      rival.style.filter = `hue-rotate(${Math.random() * 360}deg) grayscale(30%)`;
+      // 少し色味を変えるフィルタ
+      rival.style.filter = `hue-rotate(${Math.random() * 40}deg)`;
       
       const rTop = 20 + Math.random() * 70; // 高さばらつき
-      // プレイヤーが50%なので、ライバルは20%~80%あたりに散らす
-      const rLeft = 15 + Math.random() * 70; 
+      const rLeft = 15 + Math.random() * 70; // 位置ばらつき
       
       rival.style.top = rTop + 'px';
       rival.style.left = rLeft + '%';
-      rival.style.animationDuration = (0.35 + Math.random() * 0.1) + 's'; // 走るリズムを少しずらす
+      rival.style.animationDuration = (0.35 + Math.random() * 0.1) + 's';
       container.appendChild(rival);
     }
   }
@@ -692,9 +742,6 @@
       const sec = Math.floor(diff / 1000);
       const ms = Math.floor((diff % 1000) / 10);
       document.getElementById('timer').textContent = sec + "." + (ms < 10 ? "0"+ms : ms);
-      
-      // 今回は「正解・不正解で位置が変わる」ので、タイマーによる自動前進はしない
-      // updatePlayerPositionVisual(); 
     }, 50);
   }
 
