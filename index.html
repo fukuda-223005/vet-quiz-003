@@ -1,13 +1,11 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>獣医師国試対策 - GI制覇への道</title>
-  <base target="_top">
   <style>
-    /* ここから下は元の index.html にある <style> の中身をそのまま続けてください */    :root {
+    :root {
       --primary: #2c3e50;
       --main-btn: #3498db;
       --accent: #27ae60;
@@ -15,6 +13,7 @@
       --grass: #7cfc00;
       --track: #d2b48c;
       --gold: #f1c40f;
+      --text: #333;
     }
     
     body {
@@ -22,809 +21,713 @@
       background-color: var(--bg);
       margin: 0;
       padding: 0;
-      color: #333;
+      color: var(--text);
       touch-action: manipulation;
       overflow-x: hidden;
     }
 
-    /* === レース画面（上部） === */
+    /* === レースモニターエリア === */
     .race-monitor {
       background: linear-gradient(to bottom, #87CEEB 0%, #E0F7FA 60%, var(--grass) 60%, var(--grass) 75%, var(--track) 75%);
-      height: 250px;
+      padding: 15px;
+      text-align: center;
+      border-bottom: 4px solid #8d6e63;
       position: relative;
+      height: 180px;
       overflow: hidden;
-      border-bottom: 4px solid #5d4037;
+    }
+
+    .race-info {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 8px 15px;
+      border-radius: 20px;
+      display: inline-block;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      margin-bottom: 10px;
+      z-index: 10;
+      position: relative;
     }
 
     .class-badge {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: rgba(0,0,0,0.6);
-      color: #fff;
-      padding: 5px 15px;
-      border-radius: 20px;
       font-weight: bold;
-      z-index: 100;
-      font-size: 14px;
-      border: 1px solid rgba(255,255,255,0.5);
-    }
-    .badge-gold {
-      background: linear-gradient(45deg, #f39c12, #f1c40f);
-      color: #2c3e50;
-      border: 1px solid #fff;
-      box-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
+      font-size: 1.2em;
+      color: var(--primary);
+      margin-right: 10px;
+      padding: 2px 8px;
+      border: 2px solid var(--primary);
+      border-radius: 4px;
     }
 
-    .time-display {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: rgba(0,0,0,0.6);
-      color: #fff;
-      padding: 5px 15px;
-      border-radius: 5px;
-      font-family: monospace;
-      font-size: 18px;
-      z-index: 100;
-    }
-
-    /* === 馬のスタイル === */
-    .horse-sprite {
-      font-size: 50px;
-      line-height: 1;
-      user-select: none;
-      filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.3));
-      position: absolute;
-      transform: scaleX(-1); /* 右向き */
-      transition: left 0.8s ease-out;
-      will-change: transform, left;
-    }
-
-    /* 馬の色フィルタ */
-    .horse-brown { filter: sepia(0.6) saturate(2) hue-rotate(-20deg) drop-shadow(2px 2px 2px rgba(0,0,0,0.4)); }
-    .horse-black { filter: brightness(0.3) drop-shadow(2px 2px 2px rgba(0,0,0,0.4)); }
-    .horse-gray  { filter: grayscale(1) brightness(1.3) drop-shadow(2px 2px 2px rgba(0,0,0,0.4)); }
-    
-    .horse-rival {
-      font-size: 40px;
-      opacity: 0.9;
-      filter: grayscale(0.3) brightness(0.9);
-      z-index: 1;
-    }
-
-    /* プレイヤー馬 */
-    #player-horse {
-      font-size: 70px;
-      z-index: 10;
-      top: 55%;
-    }
-
-    .anim-run { animation: gallop 0.4s infinite linear; }
-    .anim-stumble { animation: stumble 0.8s ease-in-out; }
-
-    @keyframes gallop {
-      0% { transform: scaleX(-1) translateY(0) rotate(0deg); }
-      25% { transform: scaleX(-1) translateY(-3px) rotate(2deg); }
-      50% { transform: scaleX(-1) translateY(0) rotate(0deg); }
-      75% { transform: scaleX(-1) translateY(-1px) rotate(-2deg); }
-      100% { transform: scaleX(-1) translateY(0) rotate(0deg); }
-    }
-    @keyframes stumble {
-      0% { transform: scaleX(-1) rotate(0deg); }
-      20% { transform: scaleX(-1) rotate(-15deg) translateY(5px); }
-      40% { transform: scaleX(-1) rotate(10deg); }
-      60% { transform: scaleX(-1) rotate(-5deg); }
-      100% { transform: scaleX(-1) rotate(0deg); }
-    }
-
-    /* 実況吹き出し */
-    .commentary-box {
-      position: absolute;
-      top: 40px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #fff;
-      border: 2px solid #333;
-      border-radius: 10px;
-      padding: 8px 12px;
+    .time-text {
+      font-family: 'Courier New', Courier, monospace;
       font-weight: bold;
-      font-size: 14px;
-      max-width: 200px;
-      opacity: 0;
-      transition: opacity 0.3s;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-      z-index: 101;
+      font-size: 1.2em;
+      color: #d35400;
     }
-    .commentary-box::after {
-      content: '';
+
+    /* トラックと馬のアニメーション */
+    .track-lane {
+      position: absolute;
+      bottom: 20px;
+      left: 10%;
+      right: 10%;
+      height: 4px;
+      background: rgba(255,255,255,0.6);
+      border-radius: 2px;
+    }
+
+    .goal-post {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 4px;
+      height: 30px;
+      background: #e74c3c;
+    }
+    .goal-flag {
+      position: absolute;
+      right: -5px;
+      bottom: 30px;
+      font-size: 20px;
+    }
+
+    #horse-icon {
       position: absolute;
       bottom: -10px;
-      left: 50%;
-      margin-left: -10px;
-      border-width: 10px 10px 0 10px;
-      border-style: solid;
-      border-color: #333 transparent transparent transparent;
+      left: 0%;
+      font-size: 40px;
+      transition: left 0.5s ease-out, transform 0.2s;
+      transform: scaleX(-1);
+      filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.3));
+      z-index: 5;
     }
-    .show-comment { opacity: 1; }
+    
+    #live-commentary {
+      position: absolute;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-weight: bold;
+      text-shadow: 1px 1px 0 #fff;
+      color: #d35400;
+      width: 90%;
+      font-size: 0.95em;
+    }
 
     /* === クイズエリア === */
-    .quiz-container { padding: 15px; max-width: 600px; margin: 0 auto; }
-    .progress-bar { height: 8px; background: #ddd; border-radius: 4px; margin-bottom: 15px; overflow: hidden; }
-    .progress-fill { height: 100%; background: var(--main-btn); width: 0%; transition: width 0.3s; }
-    
-    .question-text {
-      font-size: 16px; line-height: 1.6; margin-bottom: 20px; font-weight: bold;
-      background: #fff; padding: 20px; border-top: 4px solid var(--main-btn);
-      box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-radius: 8px; color: #2c3e50;
-      max-height: 40vh; overflow-y: auto;
-    }
-    
-    .multi-badge { background: var(--main-btn); color: white; font-size: 12px; padding: 3px 8px; border-radius: 12px; vertical-align: middle; margin-right: 8px; font-weight: normal; }
-    .choices-grid { display: grid; gap: 12px; }
-    .choice-btn {
-      background: #fff; border: 2px solid #e0e0e0; padding: 15px; border-radius: 10px;
-      text-align: left; font-size: 15px; cursor: pointer; transition: all 0.2s; position: relative; color: #555;
-    }
-    .choice-btn:active { transform: scale(0.98); }
-    .choice-btn.selected { border-color: var(--main-btn); background-color: #eaf6ff; color: var(--main-btn); font-weight: bold; }
-    .choice-btn.correct { background-color: #d4edda; border-color: #28a745; color: #155724; }
-    .choice-btn.wrong { background-color: #f8d7da; border-color: #e74c3c; color: #721c24; }
-    
-    .action-btn {
-      background: var(--main-btn); color: white; border: none; padding: 16px; width: 100%;
-      font-size: 18px; font-weight: bold; border-radius: 30px; margin-top: 25px;
-      cursor: pointer; box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3); transition: background 0.2s;
-    }
-    .action-btn:hover { background: #2980b9; }
-    .action-btn:disabled { background: #bdc3c7; box-shadow: none; cursor: not-allowed; }
-
-    /* === 画面切り替え === */
-    .screen { display: none; }
-    .active { display: block; }
-    .center-screen { text-align: center; padding: 40px 20px; max-width: 600px; margin: 0 auto; }
-    .title-logo { font-size: 28px; margin-bottom: 10px; color: var(--primary); font-weight: 900; letter-spacing: 1px; }
-    .title-sub { font-size: 16px; color: #7f8c8d; margin-bottom: 30px; display: block; }
-    .start-btn { background: var(--main-btn); animation: gentle-pulse 2s infinite; }
-    @keyframes gentle-pulse {
-      0% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.4); }
-      70% { box-shadow: 0 0 0 15px rgba(52, 152, 219, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0); }
-    }
-    .loading { font-size: 14px; color: #95a5a6; margin-top: 20px; }
-    .ending-bg { background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); }
-    .trophy-anim { font-size: 80px; margin: 20px 0; animation: popTrophy 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-    @keyframes popTrophy {
-      0% { transform: scale(0) rotate(-45deg); opacity: 0; }
-      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    .quiz-container {
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     }
 
-    /* === カテゴリ選択 === */
-    .cat-select-container {
-      margin-bottom: 20px;
-    }
-    .cat-select-label {
-      text-align: left; font-weight: bold; color: #555; margin-bottom: 8px; font-size: 14px;
-    }
-    .cat-buttons {
-      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
-    }
-    .cat-btn {
-      padding: 10px; border: 2px solid #ddd; border-radius: 8px; background: #fff; cursor: pointer; font-weight: bold; color: #7f8c8d;
-    }
-    .cat-btn.selected {
-      background: var(--primary); color: #fff; border-color: var(--primary);
+    .question-box {
+      font-size: 1.1em;
+      line-height: 1.6;
+      margin-bottom: 25px;
+      border-left: 5px solid var(--main-btn);
+      padding-left: 15px;
     }
 
-    /* === 馬選択ボタン === */
-    .horse-select-grid {
-      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 30px;
+    .options-grid {
+      display: grid;
+      gap: 12px;
     }
-    .horse-select-item {
-      border: 2px solid #ddd; border-radius: 10px; padding: 10px; cursor: pointer; transition: all 0.2s; background: #fff;
+
+    .option-btn {
+      background: #fff;
+      border: 2px solid #e0e0e0;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 1em;
+      transition: all 0.2s;
+      position: relative;
     }
-    .horse-select-item:hover { border-color: #aaa; }
-    .horse-select-item.selected {
-      border-color: var(--main-btn); background: #eaf6ff; box-shadow: 0 0 10px rgba(52, 152, 219, 0.2);
+
+    .option-btn:hover {
+      background-color: #f8f9fa;
+      border-color: #b0bec5;
     }
-    .horse-select-preview {
-      font-size: 40px; margin-bottom: 5px; display: block; transform: scaleX(-1);
+
+    .option-btn.selected {
+      background-color: #e3f2fd;
+      border-color: var(--main-btn);
+      color: var(--main-btn);
+      font-weight: bold;
     }
-    .horse-select-label { font-size: 14px; font-weight: bold; color: #555; }
+
+    .option-btn.correct {
+      background-color: #d4edda;
+      border-color: #28a745;
+      color: #155724;
+    }
+
+    .option-btn.wrong {
+      background-color: #f8d7da;
+      border-color: #dc3545;
+      color: #721c24;
+    }
+
+    #confirm-btn {
+      display: none;
+      width: 100%;
+      margin-top: 20px;
+      padding: 15px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1em;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #feedback-area {
+      display: none;
+      margin-top: 20px;
+      padding: 15px;
+      background: #f1f8e9;
+      border-radius: 8px;
+      border: 1px solid #c5e1a5;
+    }
+
+    #next-btn {
+      width: 100%;
+      margin-top: 15px;
+      padding: 12px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+
+    /* === 設定・結果画面 === */
+    #start-screen, #result-screen {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.98);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+    }
     
-    #current-horse-display {
-      background: #fff; padding: 10px 20px; border-radius: 30px; display: inline-flex; align-items: center; gap: 10px; margin-bottom: 20px; border: 1px solid #ddd;
+    .hidden { display: none !important; }
+
+    h1 { color: var(--primary); margin-bottom: 10px; }
+    h2 { color: var(--main-btn); margin-bottom: 20px; }
+    
+    .config-group { margin: 15px 0; text-align: left; width: 100%; max-width: 300px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; }
+    select, button { width: 100%; padding: 10px; font-size: 1em; border-radius: 5px; border: 1px solid #ccc; }
+    
+    .primary-btn {
+      background: var(--main-btn); color: white; border: none; font-weight: bold; margin-top: 10px;
+      box-shadow: 0 4px 0 #2980b9;
+    }
+    .primary-btn:active { box-shadow: 0 2px 0 #2980b9; transform: translateY(2px); }
+    .reset-btn { background: #95a5a6; color: white; border: none; margin-top: 10px; font-size: 0.8em; }
+
+    @media (max-width: 480px) {
+      .race-monitor { height: 160px; }
+      #horse-icon { font-size: 32px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- 1. ローディング画面 -->
-  <div id="screen-loading" class="screen active center-screen">
-    <h2>出走準備中...</h2>
-    <div class="loading">
-      データベース照会中...<br>
-      <span style="font-size:12px; color:#bdc3c7;">(問題数が多い場合は数秒かかります)</span>
+  <!-- スタート画面 -->
+  <div id="start-screen">
+    <h1>🏆 GI制覇への道</h1>
+    <p>獣医師国家試験対策 (タイムアタック)</p>
+    
+    <div id="current-rank-display" style="margin: 10px 0; font-size: 1.2em; color: #d35400;">
+      現在のクラス: <span id="start-class-name">新馬戦</span>
+      <br><span style="font-size:0.8em; color:#555;">目標(1着): <span id="start-target-time">--</span>秒以内</span>
+    </div>
+
+    <div class="config-group">
+      <label>出題範囲</label>
+      <select id="category-select">
+        <option value="A">学説A（基礎）</option>
+        <option value="B">学説B（臨床・応用）</option>
+        <option value="ALL">全範囲 (A+B)</option>
+      </select>
+    </div>
+
+    <div class="config-group">
+      <label>出走馬</label>
+      <select id="horse-color-select">
+        <option value="🐴">鹿毛</option>
+        <option value="🐎">黒鹿毛</option>
+        <option value="🦄">芦毛</option>
+        <option value="🦓">縞</option>
+      </select>
+    </div>
+
+    <div class="config-group">
+      <button class="primary-btn" onclick="startGame()">出走する！</button>
+      <button class="reset-btn" onclick="resetGame()">データをリセットして最初から</button>
     </div>
   </div>
 
-  <!-- 2. タイトル/設定/クラス確認画面 -->
-  <div id="screen-start" class="screen center-screen">
-    <div class="title-logo">🏆 GI制覇への道</div>
-    <span class="title-sub">〜学説AB問題 完全攻略〜</span>
+  <!-- レース画面 -->
+  <header class="race-monitor">
+    <div class="race-info">
+      <span class="class-badge" id="monitor-class-name">G1</span>
+      <!-- タイマー表示 -->
+      <span class="time-text">TIME <span id="race-timer">0.0</span>s</span>
+      <br>
+      <span class="status-text" style="font-size:0.8em;">クリアまであと <span id="q-remain">10</span> 問</span>
+    </div>
+    <div id="live-commentary">ゲート入りました...</div>
 
-    <!-- 設定エリア（新馬戦のみ表示） -->
-    <div id="setup-area-wrapper">
+    <div class="track-lane">
+      <div id="horse-icon">🐴</div>
+      <div class="goal-post"></div>
+      <div class="goal-flag">🚩</div>
+    </div>
+  </header>
+
+  <main class="quiz-container">
+    <div id="question-text" class="question-box">読み込み中...</div>
+    
+    <div id="options-area" class="options-grid"></div>
+
+    <button id="confirm-btn" onclick="checkAnswerMulti()">決定</button>
+
+    <div id="feedback-area">
+      <h3 id="feedback-title"></h3>
+      <p id="feedback-text"></p>
+      <button id="next-btn" onclick="nextQuestion()">次へ進む</button>
+    </div>
+  </main>
+
+  <!-- 結果画面 -->
+  <div id="result-screen" class="hidden">
+    <h1 id="rank-emoji">🥇</h1>
+    <h2 id="rank-text">1着！</h2>
+    <p id="result-msg" style="margin-bottom:20px;">見事なタイムでゴール！</p>
+    
+    <div style="background:#eee; padding:15px; border-radius:8px; width:80%; max-width:400px; margin-bottom:20px;">
+      <p>走破時計: <span id="final-time" style="font-weight:bold; font-size:1.5em; color:#d35400;">0.0</span> 秒</p>
       
-      <!-- カテゴリ選択 -->
-      <div class="cat-select-container">
-        <div class="cat-select-label">出題範囲:</div>
-        <div class="cat-buttons">
-          <div class="cat-btn selected" onclick="selectCategory('A')" id="cat-a">A問題</div>
-          <div class="cat-btn" onclick="selectCategory('B')" id="cat-b">B問題</div>
-          <div class="cat-btn" onclick="selectCategory('ALL')" id="cat-all">総合</div>
+      <!-- 着順基準表 -->
+      <div style="text-align:left; font-size:0.85em; color:#555; margin-top:10px; line-height:1.4;">
+        <div style="display:flex; justify-content:space-between; border-bottom:1px solid #ddd;">
+           <span>1着基準:</span> <span><span id="res-target-1">--</span>秒以内</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; border-bottom:1px solid #ddd;">
+           <span>2着(+2s):</span> <span><span id="res-target-2">--</span>秒以内</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; border-bottom:1px solid #ddd;">
+           <span>3着(+5s):</span> <span><span id="res-target-3">--</span>秒以内</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; border-bottom:1px solid #ddd;">
+           <span>4着(+8s):</span> <span><span id="res-target-4">--</span>秒以内</span>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+           <span>5着(+11s):</span> <span><span id="res-target-5">--</span>秒以内</span>
         </div>
       </div>
 
-      <!-- 馬選択 -->
-      <div class="cat-select-label">愛馬を選択:</div>
-      <div class="horse-select-grid">
-        <div class="horse-select-item selected" onclick="selectHorse('brown')" id="sel-brown">
-          <span class="horse-select-preview horse-brown">🏇</span>
-          <span class="horse-select-label">鹿毛</span>
-        </div>
-        <div class="horse-select-item" onclick="selectHorse('black')" id="sel-black">
-          <span class="horse-select-preview horse-black">🏇</span>
-          <span class="horse-select-label">黒鹿毛</span>
-        </div>
-        <div class="horse-select-item" onclick="selectHorse('gray')" id="sel-gray">
-          <span class="horse-select-preview horse-gray">🏇</span>
-          <span class="horse-select-label">芦毛</span>
-        </div>
-      </div>
+      <hr style="border:1px solid #ddd; margin:10px 0;">
+      <p id="promotion-msg" style="color:#27ae60; font-weight:bold;"></p>
     </div>
 
-    <!-- 継続プレイ時のステータス表示 -->
-    <div id="current-status-display" style="display:none; flex-direction:column; align-items:center;">
-       <div id="current-horse-display">
-         <span style="font-size:12px; color:#666;">Partner:</span>
-         <span id="current-horse-icon" class="horse-sprite" style="position:static; font-size:30px;">🏇</span>
-       </div>
-       <div style="font-size:12px; color:#999; margin-bottom:15px;" id="current-category-display"></div>
-    </div>
-    
-    <div style="background:#fff; padding:20px; border-radius:15px; margin-bottom:30px; box-shadow:0 4px 15px rgba(0,0,0,0.05);">
-      <p style="font-size:12px; color:#95a5a6; margin:0 0 5px;">NEXT RACE</p>
-      <h3 id="current-class-display" style="margin:0; font-size:24px; color:var(--primary);">G1 有馬記念</h3>
-      <div style="margin-top:10px; display:inline-block; background:#ecf0f1; padding:5px 15px; border-radius:20px; font-size:13px; color:#7f8c8d;">
-        基準タイム: <span id="target-time-display" style="font-weight:bold; color:#2c3e50;">100</span>秒
-      </div>
-    </div>
-
-    <button class="action-btn start-btn" onclick="startRace()">ファンファーレ！(出走)</button>
-    
-    <p style="font-size:12px; color:#bdc3c7; margin-top:40px; cursor:pointer;" onclick="resetData()">
-      [進行状況をリセットする]
-    </p>
-  </div>
-
-  <!-- 3. レース画面 -->
-  <div id="screen-race" class="screen">
-    <div class="race-monitor" id="race-monitor">
-      <div class="class-badge" id="race-class-badge">G1 有馬記念</div>
-      <div class="time-display" id="timer">00:00</div>
-      <div class="commentary-box" id="commentary">いい脚色だ！</div>
-      <div id="rivals-container"></div>
-      <div class="horse-sprite anim-run" id="player-horse" style="left:50%;">🏇</div>
-    </div>
-
-    <div class="quiz-container">
-      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-      <div id="quiz-content"></div>
-      <button id="confirm-btn" class="action-btn" style="display:none;" onclick="submitAnswer()">決定</button>
-      <button id="next-btn" class="action-btn" style="display:none;" onclick="nextQuestion()">次の問題へ</button>
-    </div>
-  </div>
-
-  <!-- 4. 結果画面 -->
-  <div id="screen-result" class="screen center-screen ending-bg">
-    <h2 id="result-title" style="color:#7f8c8d; font-size:16px;">RACE RESULT</h2>
-    <div class="trophy-anim" id="rank-emoji">🥇</div>
-    <h1 style="margin:0; font-size:32px; color:var(--primary);" id="rank-text">1着</h1>
-    <div style="margin:20px 0; font-family:monospace; background:#fff; padding:10px; border-radius:8px; display:inline-block;">
-      Time: <span id="final-time" style="font-weight:bold; font-size:20px;">00:00</span>
-      <span style="font-size:12px; color:#95a5a6; margin-left:10px;">(基準: <span id="result-target"></span>秒)</span>
-    </div>
-    <div id="result-message" style="margin: 20px 0; font-weight:bold; color:var(--main-btn); font-size:18px; line-height:1.5;"></div>
-    <button class="action-btn" id="result-btn" onclick="goToTitle()">次走へ向かう</button>
+    <button class="primary-btn" id="next-race-btn" onclick="location.reload()">次のレースへ</button>
   </div>
 
 <script>
-  let allData = { single: [], multi: [] };
-  
-  // クラス定義（基準タイムを20秒短縮 = 厳しく）
-  const CLASSES = [
-    { name: "新馬戦", target: 180, nextId: 2, failId: 1 },
-    { name: "未勝利戦", target: 180, nextId: 2, failId: 1 },
-    { name: "1勝クラス", target: 160, nextId: 3, failId: 2 },
-    { name: "2勝クラス", target: 150, nextId: 4, failId: 3 },
-    { name: "3勝クラス", target: 140, nextId: 5, failId: 4 },
-    { name: "オープン", target: 130, nextId: 6, failId: 5 },
-    { name: "リステッド(L)", target: 120, nextId: 7, failId: 6 },
-    { name: "GⅢ", target: 110, nextId: 8, failId: 7 },
-    { name: "GⅡ", target: 100, nextId: 9, failId: 8 },
-    { name: "GⅠ", target: 90, nextId: 10, failId: 9 },
-    { name: "有馬記念", target: 80, nextId: 11, failId: 9 },
-    { name: "凱旋門賞", target: 70, nextId: 9, failId: 9 }
+  // --- 1. 定数・設定 ---
+  // クラス定義 (12段階) + 1着基準タイム(秒)
+  const CLASS_INFO = [
+    { id: 0, name: "新馬戦", targetTime: 180 },
+    { id: 1, name: "未勝利", targetTime: 180 },
+    { id: 2, name: "1勝クラス", targetTime: 160 },
+    { id: 3, name: "2勝クラス", targetTime: 150 },
+    { id: 4, name: "3勝クラス", targetTime: 140 },
+    { id: 5, name: "オープン特別", targetTime: 130 },
+    { id: 6, name: "リステッド", targetTime: 120 },
+    { id: 7, name: "G3", targetTime: 100 },
+    { id: 8, name: "G2", targetTime: 90 },
+    { id: 9, name: "G1", targetTime: 80 },         // 1着でエンディング＆有馬権
+    { id: 10, name: "有馬記念", targetTime: 70 },   // 1着で凱旋門へ。負けるとG1へ
+    { id: 11, name: "凱旋門賞", targetTime: 60 }   // 1着で真エンディング。その後G1へ
   ];
 
-  const COMMENTS_GOOD = ["快調！", "いい脚色だ！", "そのままー！", "ナイスペース！", "手応え十分！", "折り合っている！", "抜群の手応え！", "位置取りが良い！"];
-  const COMMENTS_BAD = ["おっと！？", "どうした！？", "かかったか？", "前が壁！", "バランスを崩した！", "後退した...", "苦しい展開！", "置かれている..."];
-
-  let currentClassId = 0;
-  let raceQuestions = [];
-  let currentQIndex = 0;
+  let allData = { single: [], multi: [] };
+  
+  // レース進行用変数
+  let questionQueue = [];
+  let retryQueue = [];
   let currentQData = null;
-  let selectedChoices = [];
+  let userSelection = [];
+  
   let startTime = 0;
   let timerInterval = null;
-  let totalElapsed = 0;
+  let clearedCount = 0;
+  const TOTAL_QUESTIONS = 10;
 
-  // ゲーム用状態変数
-  let playerHorseColor = 'brown'; 
-  let playerPosition = 50; 
-  let selectedCategory = 'ALL'; // A, B, ALL
+  // 永続化データ
+  let savedState = {
+    classId: 0,
+    horseColor: "🐴",
+    category: "A"
+  };
 
-  const MAX_POS = 90;
-  const MIN_POS = 10;
-  
-  window.onload = function() {
-    const savedClass = localStorage.getItem('vetQuizClassId');
-    if (savedClass) currentClassId = parseInt(savedClass, 10);
-    if(currentClassId >= CLASSES.length) currentClassId = 0;
-
-    // 馬の色読み込み
-    const savedColor = localStorage.getItem('vetQuizHorseColor');
-    if (savedColor) playerHorseColor = savedColor;
-    
-    // カテゴリ読み込み
-    const savedCat = localStorage.getItem('vetQuizCategory');
-    if (savedCat) selectedCategory = savedCat;
-
+  // --- 2. 初期化 ---
+  window.onload = async () => {
+    loadState();
     updateStartScreen();
-    // UI初期化
-    selectHorse(playerHorseColor, false);
-    selectCategory(selectedCategory, false);
-
-// index.html の一番下、</script> の直前あたりを以下のように書き換えてください。
-
-/**
- * Python(Flask)サーバーからデータを取得して起動する
- */
-function loadDataFromPython() {
-  console.log("Pythonサーバーからデータを取得します...");
-  
-  // Flaskで設定したURL (/api/quiz_data) にアクセスします
-  fetch('/api/quiz_data')
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
-    })
-    .then(data => {
-      console.log("データ受信成功:", data);
-      // 元々 index.html に定義されている成功時処理を呼び出す
-      if (typeof onDataLoaded === 'function') {
-        onDataLoaded(data);
-      }
-    })
-    .catch(error => {
-      console.error("通信エラーが発生しました:", error);
-      // 元々 index.html に定義されている失敗時処理を呼び出す
-      if (typeof onDataError === 'function') {
-        onDataError(error);
-      }
-    });
-}
-
-/**
- * 画面が読み込まれた時の処理
- * GASの時はここが空っぽだったり google.script.run だったりしましたが、
- * Python版では上の関数を呼び出すように設定します。
- */
-window.onload = function() {
-  loadDataFromPython();
-};
-
-  function onDataLoaded(json) {
-    const data = JSON.parse(json);
-    allData = data;
-    document.getElementById('screen-loading').classList.remove('active');
-    document.getElementById('screen-start').classList.add('active');
-  }
-
-  function onDataError(e) { alert("データ読み込みエラー: " + e); }
-
-  function resetData() {
-    if(confirm("進行状況をリセットして新馬戦に戻りますか？")) {
-      currentClassId = 0;
-      localStorage.setItem('vetQuizClassId', currentClassId);
-      // カテゴリや馬はあえて残すか、リセットするか。今回はクラスだけリセット
-      updateStartScreen();
-    }
-  }
-
-  // === 設定UI操作 ===
-  function selectCategory(cat, save=true) {
-    selectedCategory = cat;
-    // ボタン表示更新
-    ['a', 'b', 'all'].forEach(id => {
-      document.getElementById(`cat-${id}`).classList.remove('selected');
-    });
-    document.getElementById(`cat-${cat.toLowerCase()}`).classList.add('selected');
     
-    if (save) localStorage.setItem('vetQuizCategory', cat);
+    // データ取得
+    try {
+      const res = await fetch('/api/quiz_data');
+      allData = await res.json();
+    } catch (e) {
+      alert("データの読み込みに失敗しました。");
+    }
+  };
+
+  function loadState() {
+    // データバージョンv4 (ルール変更のため)
+    const s = localStorage.getItem('vetQuizState_v4');
+    if (s) savedState = JSON.parse(s);
+    
+    document.getElementById('category-select').value = savedState.category;
+    document.getElementById('horse-color-select').value = savedState.horseColor;
   }
 
-  function selectHorse(color, save=true) {
-    playerHorseColor = color;
-    ['brown', 'black', 'gray'].forEach(c => {
-      document.getElementById(`sel-${c}`).classList.remove('selected');
-    });
-    document.getElementById(`sel-${color}`).classList.add('selected');
-
-    if (save) localStorage.setItem('vetQuizHorseColor', color);
+  function saveState() {
+    savedState.category = document.getElementById('category-select').value;
+    savedState.horseColor = document.getElementById('horse-color-select').value;
+    localStorage.setItem('vetQuizState_v4', JSON.stringify(savedState));
   }
 
   function updateStartScreen() {
-    const cls = CLASSES[currentClassId];
-    document.getElementById('current-class-display').textContent = cls.name;
-    document.getElementById('target-time-display').textContent = cls.target;
-    
-    const titleEl = document.getElementById('current-class-display');
-    if (currentClassId === 10) titleEl.style.color = "#d35400";
-    else if (currentClassId === 11) titleEl.style.color = "#8e44ad";
-    else titleEl.style.color = "var(--primary)";
+    const cls = CLASS_INFO.find(c => c.id === savedState.classId) || CLASS_INFO[0];
+    let name = cls.name;
+    if(savedState.classId === 11) name += " 🇫🇷";
 
-    // 新馬戦(0)のみ設定表示
-    const wrapper = document.getElementById('setup-area-wrapper');
-    const statusDisplay = document.getElementById('current-status-display');
-    
-    if (currentClassId === 0) {
-      wrapper.style.display = 'block';
-      statusDisplay.style.display = 'none';
-    } else {
-      wrapper.style.display = 'none';
-      statusDisplay.style.display = 'flex';
-      
-      const icon = document.getElementById('current-horse-icon');
-      icon.className = `horse-sprite horse-${playerHorseColor}`;
-      
-      const catText = selectedCategory === 'ALL' ? '総合(A+B)' : selectedCategory + '問題';
-      document.getElementById('current-category-display').textContent = `範囲: ${catText}`;
+    document.getElementById('start-class-name').textContent = name;
+    document.getElementById('start-target-time').textContent = cls.targetTime;
+  }
+
+  function resetGame() {
+    if(confirm("進行状況をリセットして新馬戦から始めますか？")) {
+      localStorage.removeItem('vetQuizState_v4');
+      location.reload();
     }
   }
 
-  // === 出題フィルタリング ===
-  function getFilteredQuestions(list) {
-    if (selectedCategory === 'ALL') return list;
-    // データには cat プロパティがある前提 (Code.gs修正済み)
-    return list.filter(q => q.cat === selectedCategory);
-  }
+  // --- 3. ゲーム開始フロー ---
+  function startGame() {
+    saveState();
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('horse-icon').textContent = savedState.horseColor;
 
-  function startRace() {
-    // フィルタリング
-    const filteredSingle = getFilteredQuestions(allData.single);
-    const filteredMulti = getFilteredQuestions(allData.multi);
-
-    // データ不足チェック
-    if (filteredSingle.length < 7 || filteredMulti.length < 3) {
-      alert(`問題数が足りません。\n(単一: ${filteredSingle.length}問, 複数: ${filteredMulti.length}問)\n範囲を変更するか、データを追加してください。`);
-      return;
-    }
-
-    const singles = shuffle([...filteredSingle]).slice(0, 7);
-    const multis = shuffle([...filteredMulti]).slice(0, 3);
-    raceQuestions = [...singles, ...multis];
+    createRaceDeck();
     
-    currentQIndex = 0;
-    totalElapsed = 0;
-    playerPosition = 50; 
+    const cls = CLASS_INFO.find(c => c.id === savedState.classId);
+    document.getElementById('monitor-class-name').textContent = cls.name;
     
-    document.getElementById('screen-start').classList.remove('active');
-    document.getElementById('screen-race').classList.add('active');
+    clearedCount = 0;
+    updateProgress();
     
-    const badge = document.getElementById('race-class-badge');
-    badge.textContent = CLASSES[currentClassId].name;
-    if (currentClassId >= 9) badge.classList.add('badge-gold');
-    else badge.classList.remove('badge-gold');
+    startTime = Date.now();
+    timerInterval = setInterval(updateTimer, 100);
     
-    const pHorse = document.getElementById('player-horse');
-    pHorse.className = `horse-sprite anim-run horse-${playerHorseColor}`; 
-    pHorse.textContent = '🏇';
-    updatePlayerPositionVisual();
-
-    generateRivals();
-    startTimer();
     showQuestion();
   }
 
-  function generateRivals() {
-    const container = document.getElementById('rivals-container');
-    container.innerHTML = '';
-    for(let i=0; i<7; i++) {
-      const rival = document.createElement('div');
-      rival.textContent = '🏇';
-      rival.className = 'horse-sprite anim-run horse-rival';
-      const rTop = 45 + Math.random() * 25; 
-      const rLeft = 10 + Math.random() * 80;
-      rival.style.top = rTop + '%';
-      rival.style.left = rLeft + '%';
-      rival.style.animationDuration = (0.35 + Math.random() * 0.1) + 's';
-      container.appendChild(rival);
-    }
-  }
+  function createRaceDeck() {
+    const cat = savedState.category;
+    let sPool = allData.single;
+    let mPool = allData.multi;
 
-  function startTimer() {
-    startTime = Date.now();
-    timerInterval = setInterval(() => {
-      const now = Date.now();
-      const diff = now - startTime + totalElapsed;
-      const sec = Math.floor(diff / 1000);
-      const ms = Math.floor((diff % 1000) / 10);
-      document.getElementById('timer').textContent = sec + "." + (ms < 10 ? "0"+ms : ms);
-      
-      if (playerPosition > MIN_POS) {
-        playerPosition -= 0.03; 
-        updatePlayerPositionVisual();
-      }
-    }, 50);
-  }
-  
-  function stopTimer() {
-    clearInterval(timerInterval);
-    totalElapsed += Date.now() - startTime;
-  }
-
-  function updatePlayerPositionVisual() {
-    if(playerPosition > MAX_POS) playerPosition = MAX_POS;
-    if(playerPosition < MIN_POS) playerPosition = MIN_POS;
-    const pHorse = document.getElementById('player-horse');
-    pHorse.style.left = playerPosition + '%';
-  }
-
-  function showQuestion() {
-    if (raceQuestions.length === 0) {
-      finishRace();
-      return;
+    if (cat !== 'ALL') {
+      sPool = sPool.filter(q => q.cat === cat);
+      mPool = mPool.filter(q => q.cat === cat);
     }
 
-    currentQData = raceQuestions[0];
-    selectedChoices = [];
+    sPool = shuffle(sPool);
+    mPool = shuffle(mPool);
+
+    // 単一7問 + 複数3問
+    const qSingle = sPool.slice(0, 7);
+    const qMulti = mPool.slice(0, 3);
     
-    const isMulti = currentQData.a.length > 1;
-    const badgeText = isMulti ? '2つ選べ' : '1つ選べ';
-    const badgeStyle = isMulti ? 'background:#e67e22' : 'background:var(--main-btn)';
-    
-    let html = `<div class="question-text">
-                  <span class="multi-badge" style="${badgeStyle}">${badgeText}</span>
-                  ${currentQData.q}
-                </div>`;
-    html += `<div class="choices-grid">`;
-    
-    currentQData.c.forEach((choiceText, idx) => {
-      const choiceNum = idx + 1;
-      html += `<div class="choice-btn" id="choice-${choiceNum}" onclick="selectChoice(${choiceNum}, ${isMulti})">
-        <span style="font-weight:bold; color:#aaa; margin-right:10px;">${choiceNum}.</span>${choiceText}
-      </div>`;
-    });
-    html += `</div>`;
+    questionQueue = shuffle([...qSingle, ...qMulti]);
+    retryQueue = [];
 
-    document.getElementById('quiz-content').innerHTML = html;
-    
-    const totalInit = 10; 
-    const current = Math.max(0, totalInit - raceQuestions.length); 
-    const pct = (current / totalInit) * 100;
-    document.getElementById('progress-fill').style.width = pct + "%";
-
-    document.getElementById('confirm-btn').style.display = isMulti ? 'block' : 'none';
-    document.getElementById('confirm-btn').disabled = true;
-    document.getElementById('next-btn').style.display = 'none';
-    
-    updateHorse('run');
-    hideCommentary();
-  }
-
-  function selectChoice(num, isMulti) {
-    if (document.getElementById('next-btn').style.display === 'block') return;
-
-    if (isMulti) {
-      const idx = selectedChoices.indexOf(num);
-      if (idx >= 0) {
-        selectedChoices.splice(idx, 1);
-        document.getElementById(`choice-${num}`).classList.remove('selected');
-      } else {
-        if (selectedChoices.length < 2) {
-          selectedChoices.push(num);
-          document.getElementById(`choice-${num}`).classList.add('selected');
-        }
-      }
-      document.getElementById('confirm-btn').disabled = (selectedChoices.length !== 2);
-    } else {
-      selectedChoices = [num];
-      for(let i=1; i<=5; i++) {
-        const el = document.getElementById(`choice-${i}`);
-        if(el) el.classList.remove('selected');
-      }
-      document.getElementById(`choice-${num}`).classList.add('selected');
-      submitAnswer();
+    if (questionQueue.length === 0) {
+      alert("問題データ不足です。");
+      location.reload();
     }
   }
 
-  function submitAnswer() {
-    stopTimer();
-    document.getElementById('confirm-btn').style.display = 'none';
-
-    const correctArr = currentQData.a.sort((a,b)=>a-b);
-    const userArr = selectedChoices.sort((a,b)=>a-b);
-    const isCorrect = JSON.stringify(correctArr) === JSON.stringify(userArr);
-
-    correctArr.forEach(n => {
-      const el = document.getElementById(`choice-${n}`);
-      if(el) el.classList.add('correct');
-    });
-
-    if (isCorrect) {
-      playerPosition += 12; 
-      updatePlayerPositionVisual();
-      playCommentary(true);
-      updateHorse('run');
-      raceQuestions.shift();
-      setTimeout(() => { nextQuestion(); }, 1200);
-    } else {
-      playerPosition -= 12; 
-      updatePlayerPositionVisual();
-      userArr.forEach(n => {
-        if (!correctArr.includes(n)) {
-          const el = document.getElementById(`choice-${n}`);
-          if(el) el.classList.add('wrong');
-        }
-      });
-      playCommentary(false);
-      updateHorse('stumble');
-      const missedQ = raceQuestions.shift();
-      raceQuestions.push(missedQ);
-      
-      const expDiv = document.createElement('div');
-      expDiv.style.marginTop = "15px"; expDiv.style.padding = "15px"; expDiv.style.background = "#fff3cd"; expDiv.style.color = "#856404"; expDiv.style.borderRadius = "8px";
-      expDiv.innerHTML = `<strong>解説:</strong><br>${currentQData.e || '（解説なし）'}`;
-      document.getElementById('quiz-content').appendChild(expDiv);
-      document.getElementById('next-btn').style.display = 'block';
-    }
-  }
-
-  function nextQuestion() {
-    startTime = Date.now();
-    timerInterval = setInterval(() => {
-      const now = Date.now();
-      const diff = now - startTime + totalElapsed;
-      const sec = Math.floor(diff / 1000);
-      const ms = Math.floor((diff % 1000) / 10);
-      document.getElementById('timer').textContent = sec + "." + (ms < 10 ? "0"+ms : ms);
-      if (playerPosition > MIN_POS) {
-        playerPosition -= 0.03; 
-        updatePlayerPositionVisual();
-      }
-    }, 50);
-    showQuestion();
-  }
-
-  function updateHorse(state) {
-    const horse = document.getElementById('player-horse');
-    if (state === 'stumble') {
-      horse.classList.remove('anim-run'); horse.classList.add('anim-stumble'); horse.textContent = '😵';
-    } else {
-      horse.classList.remove('anim-stumble'); horse.classList.add('anim-run'); horse.textContent = '🏇';
-    }
-  }
-
-  function playCommentary(isGood) {
-    const arr = isGood ? COMMENTS_GOOD : COMMENTS_BAD;
-    const text = arr[Math.floor(Math.random() * arr.length)];
-    const box = document.getElementById('commentary');
-    box.textContent = text;
-    box.classList.add('show-comment');
-    setTimeout(() => { box.classList.remove('show-comment'); }, 3000);
-  }
-
-  function hideCommentary() {
-    document.getElementById('commentary').classList.remove('show-comment');
-  }
-
-  function finishRace() {
-    stopTimer();
-    document.getElementById('screen-race').classList.remove('active');
-    document.getElementById('screen-result').classList.add('active');
-
-    const finalSec = Math.floor(totalElapsed / 1000);
-    const target = CLASSES[currentClassId].target;
-    document.getElementById('final-time').textContent = document.getElementById('timer').textContent;
-    document.getElementById('result-target').textContent = target;
-
-    let rank = 6;
-    const diff = finalSec - target;
-    if (diff <= 0) rank = 1; else if (diff <= 2) rank = 2; else if (diff <= 4) rank = 3; else if (diff <= 6) rank = 4; else if (diff <= 8) rank = 5;
-
-    const rankTextEl = document.getElementById('rank-text');
-    const rankEmojiEl = document.getElementById('rank-emoji');
-    const msgEl = document.getElementById('result-message');
-    const btnEl = document.getElementById('result-btn');
-
-    if (rank === 1) {
-      rankTextEl.textContent = "1着"; rankTextEl.style.color = "#f39c12"; rankEmojiEl.textContent = "🏆";
-      const nextId = CLASSES[currentClassId].nextId;
-
-      if (currentClassId === 9) { 
-        msgEl.innerHTML = `G1全制覇！おめでとうございます！<br><span style="font-size:14px; color:#555;">ファン投票で選出されました！グランプリ・有馬記念へ挑戦！</span>`;
-        btnEl.textContent = "グランプリ(有馬記念)へ";
-        currentClassId = 10;
-      } else if (currentClassId === 10) { 
-        msgEl.innerHTML = `グランプリ制覇！日本一の称号を獲得！<br><span style="font-size:14px; color:#555;">さあ、世界への挑戦権(凱旋門賞)獲得です！</span>`;
-        btnEl.textContent = "世界(凱旋門賞)へ挑戦";
-        currentClassId = 11;
-      } else if (currentClassId === 11) { 
-        msgEl.innerHTML = `世界制覇！凱旋門賞 優勝！<br>あなたは伝説になりました。<br><span style="font-size:14px; color:#555;">(G1防衛戦へ戻ります)</span>`;
-        btnEl.textContent = "凱旋帰国 (G1へ)";
-        currentClassId = 9;
-      } else {
-        msgEl.textContent = "見事勝利！次のクラスへ昇格！";
-        btnEl.textContent = "次のレースへ";
-        currentClassId = nextId;
-      }
-      localStorage.setItem('vetQuizClassId', currentClassId);
-    } else {
-      const failId = CLASSES[currentClassId].failId;
-      if (rank <= 5) {
-        rankTextEl.textContent = rank + "着"; rankTextEl.style.color = "#34495e"; rankEmojiEl.textContent = "🥈";
-        msgEl.textContent = "惜敗... このクラスで再挑戦です。";
-      } else {
-        rankTextEl.textContent = "着外"; rankTextEl.style.color = "#95a5a6"; rankEmojiEl.textContent = "☁️";
-        msgEl.textContent = "残念... まだまだ強くなれる！次走こそ勝利を！";
-      }
-
-      if (currentClassId === 10 && rank > 1) {
-        msgEl.innerHTML += "<br><span style='color:#e74c3c'>夢の続きはまた次走... G1戦線で力を蓄えましょう！</span>";
-        btnEl.textContent = "G1戦線へ戻る";
-        currentClassId = 9;
-      } else if (currentClassId === 11) {
-        msgEl.innerHTML = "世界の壁は厚かった...<br><span style='font-size:14px'>(G1防衛戦へ戻ります)</span>";
-        btnEl.textContent = "帰国する (G1へ)";
-        currentClassId = 9;
-      } else if (currentClassId === 0) {
-         if(currentClassId !== failId) {
-             msgEl.textContent += " 未勝利戦へ向かいます。";
-             currentClassId = failId;
-         }
-      } else {
-         currentClassId = failId; 
-      }
-      localStorage.setItem('vetQuizClassId', currentClassId);
-    }
-  }
-
-  function goToTitle() {
-    document.getElementById('screen-result').classList.remove('active');
-    updateStartScreen();
-    document.getElementById('screen-start').classList.add('active');
-  }
-  
   function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [array[i], array[j]] = [array[j], array[i]];
     }
     return array;
+  }
+
+  function updateTimer() {
+    const now = Date.now();
+    const diff = (now - startTime) / 1000;
+    document.getElementById('race-timer').textContent = diff.toFixed(1);
+  }
+
+  // --- 4. クイズロジック ---
+  function showQuestion() {
+    if (questionQueue.length === 0) {
+      if (retryQueue.length > 0) {
+        questionQueue = shuffle([...retryQueue]);
+        retryQueue = [];
+        const comm = document.getElementById('live-commentary');
+        comm.textContent = "最後の直線！食らいつけ！（誤答の再出題）";
+        comm.style.color = "#e74c3c";
+      } else {
+        finishRace();
+        return;
+      }
+    }
+
+    currentQData = questionQueue.shift();
+    userSelection = [];
+
+    const totalRemaining = questionQueue.length + retryQueue.length + 1;
+    document.getElementById('q-remain').textContent = totalRemaining;
+    document.getElementById('question-text').textContent = currentQData.q;
+    document.getElementById('feedback-area').style.display = 'none';
+    document.getElementById('confirm-btn').style.display = 'none';
+
+    // 実況
+    const comm = document.getElementById('live-commentary');
+    if (retryQueue.length === 0 && questionQueue.length > 5) {
+      comm.textContent = "順調なペースです！";
+      comm.style.color = "#d35400";
+    }
+
+    // 選択肢
+    const optionsArea = document.getElementById('options-area');
+    optionsArea.innerHTML = '';
+    const isMulti = currentQData.a.length > 1;
+    if (isMulti) {
+      document.getElementById('question-text').innerHTML += " <br><span style='color:red; font-size:0.8em;'>※複数選択(" + currentQData.a.length + "つ)</span>";
+      document.getElementById('confirm-btn').style.display = 'block';
+    }
+
+    currentQData.c.forEach((optText, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.textContent = optText;
+      const optId = idx + 1;
+
+      btn.onclick = () => {
+        if (document.getElementById('feedback-area').style.display === 'block') return;
+        if (isMulti) {
+          toggleSelection(btn, optId);
+        } else {
+          checkAnswerSingle(optId, btn);
+        }
+      };
+      optionsArea.appendChild(btn);
+    });
+  }
+
+  function toggleSelection(btn, optId) {
+    if (userSelection.includes(optId)) {
+      userSelection = userSelection.filter(id => id !== optId);
+      btn.classList.remove('selected');
+    } else {
+      if (userSelection.length < currentQData.a.length) {
+        userSelection.push(optId);
+        btn.classList.add('selected');
+      }
+    }
+  }
+
+  function checkAnswerSingle(selectedId, btnElement) {
+    const isCorrect = currentQData.a.includes(selectedId);
+    showFeedback(isCorrect, [selectedId]);
+  }
+
+  function checkAnswerMulti() {
+    if (userSelection.length === 0) return;
+    const correctSorted = [...currentQData.a].sort().toString();
+    const userSorted = [...userSelection].sort().toString();
+    const isCorrect = (correctSorted === userSorted);
+    showFeedback(isCorrect, userSelection);
+  }
+
+  function showFeedback(isCorrect, userSelectedIds) {
+    const feedbackArea = document.getElementById('feedback-area');
+    const title = document.getElementById('feedback-title');
+    const text = document.getElementById('feedback-text');
+    const comm = document.getElementById('live-commentary');
+
+    const buttons = document.querySelectorAll('.option-btn');
+    buttons.forEach((btn, idx) => {
+      const optId = idx + 1;
+      if (currentQData.a.includes(optId)) btn.classList.add('correct');
+      if (userSelectedIds.includes(optId) && !currentQData.a.includes(optId)) btn.classList.add('wrong');
+    });
+
+    feedbackArea.style.display = 'block';
+    
+    if (isCorrect) {
+      title.textContent = "⭕ 正解！";
+      title.style.color = "#27ae60";
+      text.textContent = currentQData.e;
+      comm.textContent = "良い反応です！加速！";
+      clearedCount++;
+      updateProgress();
+    } else {
+      title.textContent = "❌ 不正解...";
+      title.style.color = "#c0392b";
+      text.textContent = "正解: " + currentQData.e;
+      comm.textContent = "おっと、足色が鈍った！";
+      retryQueue.push(currentQData);
+    }
+    
+    document.getElementById('confirm-btn').style.display = 'none';
+  }
+
+  function updateProgress() {
+    const horse = document.getElementById('horse-icon');
+    const percent = (clearedCount / TOTAL_QUESTIONS) * 90; 
+    horse.style.left = Math.min(percent, 90) + '%';
+  }
+
+  function nextQuestion() {
+    showQuestion();
+  }
+
+  // --- 5. 着順判定と結果 ---
+  function getRank(time, target) {
+    if (time <= target) return 1;
+    if (time <= target + 2) return 2;
+    if (time <= target + 5) return 3;
+    if (time <= target + 8) return 4;
+    if (time <= target + 11) return 5;
+    return 6; // 着外
+  }
+
+  function finishRace() {
+    clearInterval(timerInterval);
+    const finishTime = (Date.now() - startTime) / 1000;
+    
+    document.getElementById('horse-icon').style.left = '95%';
+
+    const currentClass = CLASS_INFO.find(c => c.id === savedState.classId);
+    const target = currentClass.targetTime;
+    const rank = getRank(finishTime, target);
+
+    const resultScreen = document.getElementById('result-screen');
+    const rankEmojiEl = document.getElementById('rank-emoji');
+    const rankTextEl = document.getElementById('rank-text');
+    const msgEl = document.getElementById('result-msg');
+    const promMsgEl = document.getElementById('promotion-msg');
+    const nextBtnEl = document.getElementById('next-race-btn');
+    
+    resultScreen.classList.remove('hidden');
+    document.getElementById('final-time').textContent = finishTime.toFixed(2);
+    
+    // 基準タイム表示更新
+    document.getElementById('res-target-1').textContent = target;
+    document.getElementById('res-target-2').textContent = target + 2;
+    document.getElementById('res-target-3').textContent = target + 5;
+    document.getElementById('res-target-4').textContent = target + 8;
+    document.getElementById('res-target-5').textContent = target + 11;
+
+    // 着順表示
+    if (rank === 1) {
+      rankTextEl.textContent = "1着"; rankTextEl.style.color = "#e67e22"; rankEmojiEl.textContent = "🥇";
+      msgEl.textContent = "おめでとうございます！勝利です！";
+    } else if (rank <= 5) {
+      rankTextEl.textContent = rank + "着"; rankTextEl.style.color = "#34495e"; rankEmojiEl.textContent = "🥈";
+      msgEl.textContent = "惜敗... このクラスで再挑戦です。";
+    } else {
+      rankTextEl.textContent = "着外"; rankTextEl.style.color = "#95a5a6"; rankEmojiEl.textContent = "☁️";
+      msgEl.textContent = "残念... まだまだ強くなれる！次走こそ勝利を！";
+    }
+
+    // --- 昇格・降格ロジック ---
+    const currentClassId = savedState.classId;
+    let nextClassId = currentClassId;
+
+    if (currentClassId <= 8) { 
+      // --- 新馬戦(0) 〜 G2(8) ---
+      // 基本: 降格なし
+      // 1着 -> 昇格
+      // 2着以下 -> 維持
+      if (rank === 1) {
+        nextClassId = currentClassId + 1;
+        const nextName = CLASS_INFO.find(c => c.id === nextClassId).name;
+        promMsgEl.innerHTML = `クラス昇格！<br>次は「${nextName}」へ出走します！`;
+      } else {
+        promMsgEl.innerHTML = `同クラス維持。<br>次こそは勝利を掴みましょう！`;
+      }
+
+    } else if (currentClassId === 9) { 
+      // --- G1 (9) ---
+      // 1着 -> エンディング演出 & 有馬記念へ
+      // 2着以下 -> 維持
+      if (rank === 1) {
+        alert("🎉 おめでとうございます！ G1制覇達成です！ 🎉\n\nしかし、まだ戦いは終わりません。\nグランプリ「有馬記念」への出走権が与えられました！");
+        nextClassId = 10;
+        promMsgEl.innerHTML = `G1制覇達成！！<br>特別招待:「有馬記念」へ挑戦します！`;
+        nextBtnEl.textContent = "有馬記念へ出走";
+      } else {
+        promMsgEl.innerHTML = `G1の壁は厚い...<br>諦めずに再挑戦しましょう！`;
+      }
+
+    } else if (currentClassId === 10) { 
+      // --- 有馬記念 (10) ---
+      // 1着 -> 凱旋門賞へ
+      // 2着以下 -> G1へ戻る
+      if (rank === 1) {
+        alert("🏆 有馬記念 優勝！ 🏆\n\n日本最強の証明は済みました。\n世界への挑戦権...「凱旋門賞」へ挑みますか？");
+        nextClassId = 11;
+        promMsgEl.innerHTML = `グランプリ制覇！！<br>いざ、世界へ。「凱旋門賞」挑戦！`;
+        nextBtnEl.textContent = "フランスへ遠征する";
+      } else {
+        nextClassId = 9; // G1へ戻る
+        promMsgEl.innerHTML = `残念...<br>G1戦線へ戻り、再び招待を待ちましょう。`;
+        nextBtnEl.textContent = "G1へ戻る";
+      }
+
+    } else if (currentClassId === 11) {
+      // --- 凱旋門賞 (11) ---
+      // 1着 -> 真エンディング & G1へ
+      // 2着以下 -> G1へ
+      if (rank === 1) {
+        alert("🇫🇷 凱旋門賞 制覇！！！ 🇫🇷\n\n世界最強の獣医師の誕生です！\nこれにて完全クリアとなります！おめでとうございます！");
+        promMsgEl.innerHTML = `伝説達成！おめでとうございます！<br>凱旋門賞ウィナーとしてG1を防衛しましょう。`;
+      } else {
+        promMsgEl.innerHTML = `世界の壁は高かった...<br>帰国してG1から出直します。`;
+      }
+      // どっちにしろG1へ戻る
+      nextClassId = 9;
+      nextBtnEl.textContent = "帰国する (G1へ)";
+    }
+
+    savedState.classId = nextClassId;
+    saveState();
   }
 </script>
 </body>
